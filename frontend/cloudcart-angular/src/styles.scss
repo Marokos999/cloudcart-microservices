@@ -1,0 +1,39 @@
+@use "tailwindcss";
+
+:root {
+  --bg: #080808;
+  --surface: #0f0f0f;
+  --card: #131313;
+  --border: rgba(255, 255, 255, 0.07);
+  --primary: #cc0000;
+  --primary-hover: #e60000;
+  --text: #f0f0f0;
+  --muted: #888888;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #fbbf24;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.display-font {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+}

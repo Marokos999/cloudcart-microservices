@@ -1,0 +1,58 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Inventory <span>Dashboard</span></h1>
+    <a routerLink="/inventory/stock" class="btn-primary">Manage stock</a>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Products</div>
+      <div class="stat-value" style="color: var(--primary)">{{ totalItems }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Low Stock</div>
+      <div class="stat-value" style="color: var(--warning)">{{ lowStock }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Out of Stock</div>
+      <div class="stat-value" style="color: var(--danger)">{{ outOfStock }}</div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading...</div>
+  } @else {
+    <div class="stock-list">
+      <div class="list-header">
+        <span>Product</span>
+        <span>Available</span>
+        <span>Reserved</span>
+        <span>Stock level</span>
+        <span>Status</span>
+      </div>
+      @for (item of items; track item.product.id) {
+        <div class="stock-row clickable" [routerLink]="['/inventory/stock', item.product.id]">
+          <div class="product-name">
+            <div class="thumb">
+              @if (item.product.imageFile) {
+                <img [src]="item.product.imageFile" [alt]="item.product.name" />
+              } @else {
+                🎮
+              }
+            </div>
+            <div>
+              <div class="name">{{ item.product.name }}</div>
+              <div class="category">{{ item.product.category }}</div>
+            </div>
+          </div>
+          <div>{{ item.inventory.availableQuantity }}</div>
+          <div>{{ item.inventory.reservedQuantity }}</div>
+          <div class="bar-wrap">
+            <div class="bar" [style.width.%]="barWidth(item.inventory.availableQuantity)" [class]="item.statusClass"></div>
+          </div>
+          <div><span class="badge" [class]="item.statusClass">{{ item.statusLabel }}</span></div>
+        </div>
+      }
+    </div>
+  }
+</div>

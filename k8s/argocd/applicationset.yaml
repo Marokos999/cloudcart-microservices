@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cloudcart-services
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - service: catalog
+            namespace: cloudcart
+          - service: basket
+            namespace: cloudcart
+          - service: discount-grpc
+            namespace: cloudcart
+          - service: ordering
+            namespace: cloudcart
+          - service: payment
+            namespace: cloudcart
+          - service: notification
+            namespace: cloudcart
+          - service: inventory
+            namespace: cloudcart
+          - service: gateway
+            namespace: cloudcart
+          - service: frontend
+            namespace: cloudcart
+  template:
+    metadata:
+      name: "cloudcart-{{service}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/Marokos999/cloudcart-microservices.git
+        targetRevision: HEAD
+        path: k8s/helm/cloudcart-service
+        helm:
+          valueFiles:
+            - "../values/{{service}}.yaml"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

@@ -1,0 +1,86 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <a routerLink="/admin" class="back">← Dashboard</a>
+      <h1>Manage <span>Coupons</span></h1>
+    </div>
+    <div class="header-right">
+      <div class="count">{{ coupons.length }} coupons</div>
+      <button class="btn-new" (click)="openCreate()">+ New coupon</button>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading...</div>
+  } @else if (coupons.length === 0) {
+    <div class="loading">No coupons yet. Create one to give a product a discount.</div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Product</th>
+            <th>Description</th>
+            <th>Discount</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (coupon of coupons; track coupon.id) {
+            <tr>
+              <td>
+                @if (coupon.code) {
+                  <span class="code-badge">{{ coupon.code }}</span>
+                } @else {
+                  <span class="auto-badge">Auto</span>
+                }
+              </td>
+              <td>{{ coupon.productName || 'Whole cart' }}</td>
+              <td class="desc">{{ coupon.description }}</td>
+              <td><span class="amount-badge">-${{ coupon.amount }}</span></td>
+              <td>
+                <div class="actions">
+                  <button class="action-btn edit" (click)="openEdit(coupon)">Edit</button>
+                  <button class="action-btn delete" (click)="deleteCoupon(coupon)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (formOpen) {
+    <div class="modal-backdrop" (click)="closeForm()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2>{{ editingId ? 'Edit coupon' : 'New coupon' }}</h2>
+
+        <label>Coupon code (customer enters this at checkout; leave empty for automatic product discount)</label>
+        <input type="text" [(ngModel)]="form.code" placeholder="e.g. SUMMER50" style="text-transform:uppercase" />
+
+        <label>Product (leave empty for whole-cart code coupons)</label>
+        <select [(ngModel)]="form.productName">
+          <option value="">Whole cart</option>
+          @for (name of productNames; track name) {
+            <option [value]="name">{{ name }}</option>
+          }
+        </select>
+
+        <label>Description</label>
+        <input type="text" [(ngModel)]="form.description" placeholder="e.g. Summer sale" />
+
+        <label>Discount amount ($)</label>
+        <input type="number" min="1" step="1" [(ngModel)]="form.amount" />
+
+        <div class="modal-actions">
+          <button class="btn-cancel" (click)="closeForm()">Cancel</button>
+          <button class="btn-save" [disabled]="saving" (click)="saveCoupon()">
+            {{ saving ? 'Saving...' : (editingId ? 'Save changes' : 'Create') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

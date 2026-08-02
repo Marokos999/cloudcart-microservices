@@ -1,0 +1,70 @@
+<section class="page-hero">
+  <div class="page-container">
+    <span class="eyebrow">Get in Touch</span>
+    <h1>Contact <span>Us</span></h1>
+    <p>Have a question, issue, or partnership inquiry? We respond within 24 hours.</p>
+  </div>
+</section>
+
+<section class="contact-body">
+  <div class="page-container">
+    <div class="contact-grid">
+
+      <div class="contact-info">
+        <div class="info-item">
+          <span class="info-icon">📧</span>
+          <div>
+            <h4>Email</h4>
+            <p>support&#64;cloudcart.dev</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">💬</span>
+          <div>
+            <h4>Discord</h4>
+            <p>discord.gg/cloudcart</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">🕐</span>
+          <div>
+            <h4>Support Hours</h4>
+            <p>Mon–Fri, 9am–6pm CET</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-form-wrap">
+        @if (sent()) {
+          <div class="success-msg">
+            <span>✓</span>
+            <h3>Message sent!</h3>
+            <p>We'll get back to you within 24 hours.</p>
+          </div>
+        } @else {
+          <form (ngSubmit)="submit()" #f="ngForm">
+            <div class="field">
+              <label>Name</label>
+              <input type="text" [(ngModel)]="name" name="name" placeholder="Your name" required />
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input type="email" [(ngModel)]="email" name="email" placeholder="you@example.com" required />
+            </div>
+            <div class="field">
+              <label>Message</label>
+              <textarea [(ngModel)]="message" name="message" rows="5" placeholder="What can we help you with?" required></textarea>
+            </div>
+            @if (error()) {
+              <p class="error-msg">{{ error() }}</p>
+            }
+            <button type="submit" class="btn-submit" [disabled]="sending()">
+              {{ sending() ? 'Sending...' : 'Send Message' }}
+            </button>
+          </form>
+        }
+      </div>
+
+    </div>
+  </div>
+</section>

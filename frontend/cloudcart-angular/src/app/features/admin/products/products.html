@@ -1,0 +1,106 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <a routerLink="/admin" class="back">← Dashboard</a>
+      <h1>Manage <span>Products</span></h1>
+    </div>
+    <div class="header-right">
+      <div class="count">{{ filtered.length }} products</div>
+      <button class="btn-new" (click)="openCreate()">+ New product</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input
+      type="text"
+      class="search"
+      placeholder="Search products..."
+      [(ngModel)]="search"
+      (ngModelChange)="applyFilter()"
+    />
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading...</div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of filtered; track product.id) {
+            <tr>
+              <td>
+                <div class="img-cell">
+                  @if (product.imageFile) {
+                    <img class="product-thumb" [src]="product.imageFile" [alt]="product.name" />
+                  } @else {
+                    <div class="img-placeholder">No img</div>
+                  }
+                </div>
+              </td>
+              <td>{{ product.name }}</td>
+              <td><span class="cat-badge">{{ product.category }}</span></td>
+              <td>${{ product.price }}</td>
+              <td>
+                <div class="actions">
+                  <a [routerLink]="['/products', product.id]" class="action-btn view">View</a>
+                  <button class="action-btn edit" (click)="openEdit(product)">Edit</button>
+                  <input
+                    #fileInput
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    style="display:none"
+                    (change)="onFileSelected(product.id, $event)"
+                  />
+                  <button
+                    class="action-btn upload"
+                    [disabled]="uploadingId === product.id"
+                    (click)="triggerUpload(fileInput)"
+                  >
+                    {{ uploadingId === product.id ? '...' : 'Upload img' }}
+                  </button>
+                  <button class="action-btn delete" (click)="deleteProduct(product)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (formOpen) {
+    <div class="modal-backdrop" (click)="closeForm()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2>{{ editingId ? 'Edit product' : 'New product' }}</h2>
+
+        <label>Name</label>
+        <input type="text" [(ngModel)]="form.name" placeholder="Product name" />
+
+        <label>Category</label>
+        <input type="text" [(ngModel)]="form.category" placeholder="Category" />
+
+        <label>Description</label>
+        <textarea rows="3" [(ngModel)]="form.description" placeholder="Description"></textarea>
+
+        <label>Price ($)</label>
+        <input type="number" min="0" step="0.01" [(ngModel)]="form.price" />
+
+        <div class="modal-actions">
+          <button class="btn-cancel" (click)="closeForm()">Cancel</button>
+          <button class="btn-save" [disabled]="saving" (click)="saveProduct()">
+            {{ saving ? 'Saving...' : (editingId ? 'Save changes' : 'Create') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

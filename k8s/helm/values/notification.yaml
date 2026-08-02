@@ -1,0 +1,28 @@
+image:
+  repository: ghcr.io/marokos999/cloudcart-notification
+  tag: "latest"
+
+service:
+  port: 80
+  targetPort: 8080
+
+env:
+  - name: ASPNETCORE_ENVIRONMENT
+    value: "Development"
+  - name: MessageBroker__Host
+    value: "amqp://rabbitmq:5672"
+  - name: MessageBroker__UserName
+    value: "guest"
+  - name: MessageBroker__Password
+    value: "guest"
+  - name: EmailSettings__ApiKey
+    valueFrom:
+      secretKeyRef:
+        name: cloudcart-secrets
+        key: email-api-key
+  - name: EmailSettings__From
+    value: "noreply@cloudcart.dev"
+  - name: Cors__AllowedOrigins__0
+    value: "http://localhost:4200"
+  - name: Cors__AllowedOrigins__1
+    value: "http://cloudcart.local"

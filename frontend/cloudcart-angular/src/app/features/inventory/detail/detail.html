@@ -1,0 +1,107 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <a routerLink="/inventory/stock" class="back">← Back to Stock</a>
+      <h1>Product <span>Detail</span></h1>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading...</div>
+  } @else if (!product) {
+    <div class="loading">Product not found.</div>
+  } @else {
+    <div class="detail-layout">
+
+      <div class="product-card">
+        <div class="product-img">
+          @if (product.imageFile) {
+            <img [src]="product.imageFile" [alt]="product.name" />
+          } @else {
+            <span class="emoji">🎮</span>
+          }
+        </div>
+        <div class="product-info">
+          <div class="category">{{ product.category }}</div>
+          <h2>{{ product.name }}</h2>
+          <p class="description">{{ product.description }}</p>
+          <div class="price">${{ product.price }}</div>
+        </div>
+      </div>
+
+      @if (inventory) {
+        <div class="stock-card">
+          <h3>Stock Overview</h3>
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-label">Total</div>
+              <div class="stat-value">{{ inventory.quantity }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Available</div>
+              <div class="stat-value available">{{ inventory.availableQuantity }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Reserved</div>
+              <div class="stat-value reserved">{{ inventory.reservedQuantity }}</div>
+            </div>
+          </div>
+          <div class="status-row">
+            <span class="badge" [class]="statusClass">{{ statusLabel }}</span>
+            @if (inventory.availableQuantity <= 5) {
+              <span class="reorder-hint">⚠ Reorder recommended</span>
+            }
+          </div>
+        </div>
+
+        <div class="restock-card">
+          <h3>Restock Product</h3>
+          <p>Current total stock: <strong>{{ inventory.quantity }}</strong> units</p>
+          <div class="restock-form">
+            <label>Units to add</label>
+            <input
+              type="number"
+              class="qty-input"
+              [(ngModel)]="restockAmount"
+              min="1"
+              placeholder="0"
+            />
+            @if (restockAmount > 0) {
+              <div class="preview">
+                After restock: <strong>{{ inventory.quantity + restockAmount }}</strong> total
+                (<strong>{{ inventory.availableQuantity + restockAmount }}</strong> available)
+              </div>
+            }
+            <button class="btn-primary" (click)="restock()" [disabled]="restockAmount <= 0 || saving">
+              {{ saving ? 'Processing...' : 'Confirm Restock' }}
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="restock-card no-inventory">
+          <h3>Add to Inventory</h3>
+          <p>This product has no inventory record. Enter an initial stock quantity to add it.</p>
+          <div class="restock-form">
+            <label>Initial stock quantity</label>
+            <input
+              type="number"
+              class="qty-input"
+              [(ngModel)]="createAmount"
+              min="1"
+              placeholder="0"
+            />
+            @if (createAmount > 0) {
+              <div class="preview">
+                Will add <strong>{{ createAmount }}</strong> units to inventory
+              </div>
+            }
+            <button class="btn-primary" (click)="createInventory()" [disabled]="createAmount <= 0 || saving">
+              {{ saving ? 'Processing...' : 'Add to Inventory' }}
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+</div>

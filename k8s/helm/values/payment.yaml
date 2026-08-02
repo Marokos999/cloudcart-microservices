@@ -1,0 +1,27 @@
+image:
+  repository: ghcr.io/marokos999/cloudcart-payment
+  tag: "latest"
+
+service:
+  port: 80
+  targetPort: 8080
+
+env:
+  - name: ASPNETCORE_ENVIRONMENT
+    value: "Development"
+  - name: MessageBroker__Host
+    value: "amqp://rabbitmq:5672"
+  - name: MessageBroker__UserName
+    value: "guest"
+  - name: MessageBroker__Password
+    value: "guest"
+  - name: Stripe__SecretKey
+    valueFrom:
+      secretKeyRef:
+        name: cloudcart-stripe-secrets
+        key: stripe-secret-key
+  - name: Stripe__WebhookSecret
+    valueFrom:
+      secretKeyRef:
+        name: cloudcart-stripe-secrets
+        key: stripe-webhook-secret

@@ -1,0 +1,21 @@
+image:
+  repository: ghcr.io/marokos999/cloudcart-basket
+  tag: "latest"
+
+service:
+  port: 80
+  targetPort: 8080
+
+env:
+  - name: ASPNETCORE_ENVIRONMENT
+    value: "Development"
+  - name: ConnectionStrings__Redis
+    value: "redis:6379"
+  - name: GrpcSettings__DiscountUrl
+    value: "http://discount-grpc:8080"
+  - name: MessageBroker__Host
+    value: "amqp://rabbitmq:5672"
+  - name: MessageBroker__UserName
+    value: "guest"
+  - name: MessageBroker__Password
+    value: "guest"

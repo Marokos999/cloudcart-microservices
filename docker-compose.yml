@@ -1,0 +1,339 @@
+services:
+
+  # ── MongoDB (Catalog) ──────────────────────────────────────────
+  mongodb:
+    image: mongo:8.0
+    container_name: cloudcart-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - cloudcart-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── PostgreSQL (Keycloak + Basket) ────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: cloudcart-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: BasketDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cloudcart-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (Basket cache) ───────────────────────────────────────
+  redis:
+    image: redis:7.4-alpine
+    container_name: cloudcart-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cloudcart-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── SQL Server (Ordering + Inventory) ─────────────────────────
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: cloudcart-sqlserver
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${SQLSERVER_PASSWORD}
+      MSSQL_PID: Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - cloudcart-network
+
+  # ── RabbitMQ (Message broker) ─────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: cloudcart-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - cloudcart-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ── Keycloak (Auth / OIDC) ────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: cloudcart-keycloak
+    restart: unless-stopped
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HTTP_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - cloudcart-network
+
+  # ── Catalog.API ───────────────────────────────────────────────
+  catalog-api:
+    build:
+      context: .
+      dockerfile: src/Services/Catalog/Catalog.API/Dockerfile
+    container_name: cloudcart-catalog-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Database=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017
+      - Minio__AccessKey=${MINIO_USER}
+      - Minio__SecretKey=${MINIO_PASSWORD}
+    ports:
+      - "5159:8080"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - cloudcart-network
+
+  # ── Discount.Grpc ─────────────────────────────────────────────
+  discount-grpc:
+    build:
+      context: .
+      dockerfile: src/Services/Discount/Discount.Grpc/Dockerfile
+    container_name: cloudcart-discount-grpc
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MessageBroker__Host=amqp://rabbitmq:5672
+      - MessageBroker__UserName=${RABBITMQ_USER}
+      - MessageBroker__Password=${RABBITMQ_PASSWORD}
+    ports:
+      - "5055:8080"
+      - "5056:8081"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - cloudcart-network
+
+  # ── Basket.API ────────────────────────────────────────────────
+  basket-api:
+    build:
+      context: .
+      dockerfile: src/Services/Basket/Basket.API/Dockerfile
+    container_name: cloudcart-basket-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Redis=redis:6379,password=${REDIS_PASSWORD}
+      - GrpcSettings__DiscountUrl=http://discount-grpc:8080
+      - MessageBroker__Host=amqp://rabbitmq:5672
+      - MessageBroker__UserName=${RABBITMQ_USER}
+      - MessageBroker__Password=${RABBITMQ_PASSWORD}
+    ports:
+      - "5260:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discount-grpc:
+        condition: service_started
+    networks:
+      - cloudcart-network
+
+  # ── Ordering.API ──────────────────────────────────────────────
+  ordering-api:
+    build:
+      context: .
+      dockerfile: src/Services/Ordering/Ordering.API/Dockerfile
+    container_name: cloudcart-ordering-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Database=Server=sqlserver,1433;Database=OrderingDb;User Id=sa;Password=${SQLSERVER_PASSWORD};TrustServerCertificate=True
+      - MessageBroker__Host=amqp://rabbitmq:5672
+      - MessageBroker__UserName=${RABBITMQ_USER}
+      - MessageBroker__Password=${RABBITMQ_PASSWORD}
+    ports:
+      - "5172:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_started
+    networks:
+      - cloudcart-network
+
+  # ── Inventory.API ─────────────────────────────────────────────
+  inventory-api:
+    build:
+      context: .
+      dockerfile: src/Services/Inventory/Inventory.API/Dockerfile
+    container_name: cloudcart-inventory-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Database=Server=sqlserver,1433;Database=InventoryDb;User Id=sa;Password=${SQLSERVER_PASSWORD};TrustServerCertificate=True
+      - MessageBroker__Host=amqp://rabbitmq:5672
+      - MessageBroker__UserName=${RABBITMQ_USER}
+      - MessageBroker__Password=${RABBITMQ_PASSWORD}
+    ports:
+      - "5188:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_started
+    networks:
+      - cloudcart-network
+
+  # ── Payment.API ───────────────────────────────────────────────
+  payment-api:
+    build:
+      context: .
+      dockerfile: src/Services/Payment/Payment.API/Dockerfile
+    container_name: cloudcart-payment-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Stripe__SecretKey=${STRIPE_SECRET_KEY}
+    ports:
+      - "5301:8080"
+    networks:
+      - cloudcart-network
+
+  # ── Notification.API ──────────────────────────────────────────
+  notification-api:
+    build:
+      context: .
+      dockerfile: src/Services/Notification/Notification.API/Dockerfile
+    container_name: cloudcart-notification-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MessageBroker__Host=amqp://rabbitmq:5672
+      - MessageBroker__UserName=${RABBITMQ_USER}
+      - MessageBroker__Password=${RABBITMQ_PASSWORD}
+      - EmailSettings__ApiKey=${RESEND_API_KEY}
+      - EmailSettings__From=onboarding@resend.dev
+      - EmailSettings__DisplayName=CloudCart
+    ports:
+      - "5300:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - cloudcart-network
+
+  # ── MinIO (Object storage) ───────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: cloudcart-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - cloudcart-network
+
+  # ── API Gateway (YARP) ────────────────────────────────────────
+  gateway:
+    build:
+      context: .
+      dockerfile: src/Gateway/CloudCart.Gateway/Dockerfile
+    container_name: cloudcart-gateway
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Keycloak__Authority=http://keycloak:8080/realms/cloudcart
+      - Keycloak__Audience=cloudcart-client
+    ports:
+      - "5000:8080"
+    depends_on:
+      - catalog-api
+      - basket-api
+      - ordering-api
+      - inventory-api
+      - keycloak
+    networks:
+      - cloudcart-network
+
+  # ── Angular Frontend ──────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend/cloudcart-angular
+      dockerfile: Dockerfile
+    container_name: cloudcart-frontend
+    restart: unless-stopped
+    profiles:
+      - frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - gateway
+    networks:
+      - cloudcart-network
+
+# ── Volumes ────────────────────────────────────────────────────
+volumes:
+  mongodb_data:
+  postgres_data:
+  redis_data:
+  sqlserver_data:
+  rabbitmq_data:
+  minio_data:
+
+# ── Network ────────────────────────────────────────────────────
+networks:
+  cloudcart-network:
+    driver: bridge

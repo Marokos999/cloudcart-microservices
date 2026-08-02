@@ -1,0 +1,60 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Admin <span>Dashboard</span></h1>
+    <div class="header-actions">
+      <a routerLink="/admin/orders" class="btn-outline">All orders</a>
+      <a routerLink="/admin/coupons" class="btn-outline">Coupons</a>
+      <a routerLink="/admin/products" class="btn-primary">Manage products</a>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    @for (stat of stats; track stat.label) {
+      <div class="stat-card">
+        <div class="stat-label">{{ stat.label }}</div>
+        <div class="stat-value" [style.color]="stat.color">{{ stat.value }}</div>
+        <div class="stat-sub">{{ stat.sub }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>Recent <span>Orders</span></h2>
+      <a routerLink="/admin/orders" class="view-all">View all →</a>
+    </div>
+
+    @if (loading) {
+      <div class="loading">Loading...</div>
+    } @else if (orders.length === 0) {
+      <div class="loading">No orders yet.</div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of orders; track order.id) {
+              <tr class="clickable" [routerLink]="['/admin/orders', order.id]">
+                <td class="id">{{ order.id.slice(0, 8) }}...</td>
+                <td>{{ order.shippingAddress.firstName }} {{ order.shippingAddress.lastName }}</td>
+                <td>{{ order.orderItems.length }}</td>
+                <td>${{ order.totalPrice.toFixed(2) }}</td>
+                <td><span class="badge" [class]="statusClass(order.status)">{{ order.status }}</span></td>
+                <td>{{ order.createdAt | date:'mediumDate' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

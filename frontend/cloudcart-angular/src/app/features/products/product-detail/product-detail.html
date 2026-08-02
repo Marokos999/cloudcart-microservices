@@ -1,0 +1,50 @@
+<div class="page">
+  @if (loading) {
+    <div class="loading">Loading...</div>
+  } @else if (product) {
+    <a routerLink="/products" class="back">← Back to products</a>
+
+    <div class="detail-layout">
+
+      <!-- SLIDESHOW -->
+      <div class="gallery">
+        <div class="main-img">
+          @if (allImages.length) {
+            <img [src]="allImages[activeIdx]" [alt]="product.name" />
+            @if (allImages.length > 1) {
+              <button class="nav prev" (click)="prev()">‹</button>
+              <button class="nav next" (click)="next()">›</button>
+              <div class="counter">{{ activeIdx + 1 }} / {{ allImages.length }}</div>
+            }
+          } @else {
+            <span class="emoji">🎮</span>
+          }
+        </div>
+
+        @if (allImages.length > 1) {
+          <div class="thumbs">
+            @for (img of allImages; track img; let i = $index) {
+              <div class="thumb" [class.active]="i === activeIdx" (click)="setImage(i)">
+                <img [src]="img" [alt]="product.name + ' ' + (i+1)" />
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- INFO -->
+      <div class="product-info">
+        <div class="category">{{ product.category }}</div>
+        <h1>{{ product.name }}</h1>
+        <p class="description">{{ product.description }}</p>
+        <div class="price">${{ product.price }}</div>
+        <div class="actions">
+          <button class="btn-primary" (click)="addToCart()">Add to cart</button>
+        </div>
+      </div>
+
+    </div>
+  } @else {
+    <p class="not-found">Product not found.</p>
+  }
+</div>

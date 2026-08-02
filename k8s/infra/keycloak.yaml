@@ -1,0 +1,202 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm
+  namespace: cloudcart
+data:
+  cloudcart-realm.json: |
+    {
+      "realm": "cloudcart",
+      "enabled": true,
+      "registrationAllowed": true,
+      "resetPasswordAllowed": true,
+      "loginWithEmailAllowed": true,
+      "duplicateEmailsAllowed": false,
+      "clients": [
+        {
+          "clientId": "cloudcart-client",
+          "enabled": true,
+          "publicClient": true,
+          "standardFlowEnabled": true,
+          "directAccessGrantsEnabled": true,
+          "redirectUris": [
+            "http://cloudcart.local/*",
+            "http://localhost:4200/*",
+            "http://localhost/*"
+          ],
+          "webOrigins": [
+            "http://cloudcart.local",
+            "http://localhost:4200",
+            "http://localhost"
+          ],
+          "attributes": {
+            "pkce.code.challenge.method": "S256"
+          }
+        }
+      ],
+      "roles": {
+        "realm": [
+          { "name": "user" },
+          { "name": "admin" }
+        ]
+      },
+      "defaultRoles": ["user"]
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-postgres
+  namespace: cloudcart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak-postgres
+  template:
+    metadata:
+      labels:
+        app: keycloak-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: keycloak
+            - name: POSTGRES_USER
+              value: keycloak
+            - name: POSTGRES_PASSWORD
+              value: keycloak123
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-postgres
+  namespace: cloudcart
+spec:
+  selector:
+    app: keycloak-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: cloudcart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:25.0
+          args:
+            - start-dev
+            - --import-realm
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KEYCLOAK_ADMIN
+              value: "admin"
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              value: "admin123"
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_URL
+              value: "jdbc:postgresql://keycloak-postgres:5432/keycloak"
+            - name: KC_DB_USERNAME
+              value: keycloak
+            - name: KC_DB_PASSWORD
+              value: keycloak123
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_PROXY
+              value: "edge"
+          volumeMounts:
+            - name: realm-config
+              mountPath: /opt/keycloak/data/import
+          readinessProbe:
+            httpGet:
+              path: /realms/master
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /realms/master
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 20
+            failureThreshold: 5
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+      volumes:
+        - name: realm-config
+          configMap:
+            name: keycloak-realm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: cloudcart
+spec:
+  selector:
+    app: keycloak
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak-ingress
+  namespace: cloudcart
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: keycloak.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 8080

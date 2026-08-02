@@ -1,0 +1,43 @@
+{
+  "/api/catalog": {
+    "target": "http://localhost:5000",
+    "pathRewrite": {"^/api/catalog": "/catalog"},
+    "changeOrigin": true
+  },
+  "/api/basket": {
+    "target": "http://localhost:5000",
+    "pathRewrite": {"^/api/basket": "/basket"},
+    "changeOrigin": true
+  },
+  "/api/ordering": {
+    "target": "http://localhost:5000",
+    "pathRewrite": {"^/api/ordering": "/ordering"},
+    "changeOrigin": true
+  },
+  "/api/inventory": {
+    "target": "http://localhost:5000",
+    "pathRewrite": {"^/api/inventory": "/inventory"},
+    "changeOrigin": true
+  },
+  "/api/payment": {
+    "target": "http://localhost:5000",
+    "pathRewrite": {"^/api/payment": "/payment"},
+    "changeOrigin": true
+  },
+  "/api/discount": {
+    "target": "http://localhost:5000",
+    "pathRewrite": {"^/api/discount": "/discount"},
+    "changeOrigin": true
+  },
+  "/api/notification": {
+    "target": "http://localhost:5000",
+    "pathRewrite": {"^/api/notification": "/notification"},
+    "changeOrigin": true
+  },
+  "/api/hubs": {
+    "target": "http://localhost:5000",
+    "pathRewrite": {"^/api/hubs": "/hubs"},
+    "changeOrigin": true,
+    "ws": true
+  }
+}

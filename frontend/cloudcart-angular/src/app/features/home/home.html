@@ -1,0 +1,178 @@
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-ghost">CLOUDCART</div>
+
+  <div class="hero-eyebrow">
+    <div class="dot"></div>
+    <span>New Collection — 2025</span>
+    <div class="dot"></div>
+  </div>
+
+  <h1>
+    <span class="line">GAME</span>
+    <span class="line red">HARDER</span>
+    <span class="line outline">SPEND LESS</span>
+  </h1>
+
+  <p class="hero-sub">
+    The ultimate destination for gaming hardware.<br>
+    <strong>500+ products</strong>, free shipping, and exclusive weekly drops.
+  </p>
+
+  <div class="hero-btns">
+    <a routerLink="/products" class="btn-red">Shop Collection</a>
+    <a routerLink="/products" class="btn-ghost">View Deals</a>
+  </div>
+
+  <div class="hero-meta">
+    <div class="hero-meta-item"><div class="num">500+</div><div class="lbl">Products</div></div>
+    <div class="hero-meta-sep"></div>
+    <div class="hero-meta-item"><div class="num">Free</div><div class="lbl">Shipping $50+</div></div>
+    <div class="hero-meta-sep"></div>
+    <div class="hero-meta-item"><div class="num">4.9★</div><div class="lbl">Avg Rating</div></div>
+    <div class="hero-meta-sep"></div>
+    <div class="hero-meta-item"><div class="num">24h</div><div class="lbl">Support</div></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+      <span class="ticker-item">Free Shipping Over <span class="t-red">$50</span></span>
+      <span class="ticker-item">500+ Products</span>
+      <span class="ticker-item">New Drops Every Friday</span>
+      <span class="ticker-item">24h Customer Support</span>
+      <span class="ticker-item">Exclusive Member Deals</span>
+    }
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="cat-section">
+  <div class="cat-grid">
+    <a routerLink="/products" class="cat-card">
+      <div class="cat-icon-wrap">🎮</div>
+      <div class="cat-tag">Browse</div>
+      <div class="cat-name">Consoles</div>
+      <div class="cat-desc">PlayStation, Xbox, Nintendo and more next-gen hardware.</div>
+      <span class="cat-arrow">→</span>
+    </a>
+    <a routerLink="/products" class="cat-card">
+      <div class="cat-icon-wrap">🎧</div>
+      <div class="cat-tag">Browse</div>
+      <div class="cat-name">Headsets</div>
+      <div class="cat-desc">Immersive audio from Sony, SteelSeries, HyperX and more.</div>
+      <span class="cat-arrow">→</span>
+    </a>
+    <a routerLink="/products" class="cat-card">
+      <div class="cat-icon-wrap">🕹️</div>
+      <div class="cat-tag">Browse</div>
+      <div class="cat-name">Controllers</div>
+      <div class="cat-desc">Pro-grade controllers for every platform and playstyle.</div>
+      <span class="cat-arrow">→</span>
+    </a>
+    <a routerLink="/products" class="cat-card">
+      <div class="cat-icon-wrap">⚡</div>
+      <div class="cat-tag">Browse</div>
+      <div class="cat-name">Accessories</div>
+      <div class="cat-desc">Mice, keyboards, stands, cables — everything else you need.</div>
+      <span class="cat-arrow">→</span>
+    </a>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="prod-section">
+  <div class="prod-header">
+    <div class="prod-header-left">
+      <div class="eyebrow">Curated for you</div>
+      <h2>Featured<br>Products</h2>
+    </div>
+    <div class="prod-header-right">
+      <a routerLink="/products">View all products →</a>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading products...</div>
+  } @else if (error) {
+    <div class="loading error">{{ error }}</div>
+  } @else {
+    <div class="c-grid">
+      @for (product of products; track product.id; let i = $index) {
+        <div class="c-card" [class.large]="i === 0" [routerLink]="['/products', product.id]">
+          <div class="c-img">
+            @if (getCurrentImg(product)) {
+              <img [src]="getCurrentImg(product)" [alt]="product.name"
+                   [class]="'slide ' + (imgAnim[product.id] || '')" />
+            } @else {
+              <span class="c-emoji">🎮</span>
+            }
+            <div class="c-overlay">
+              <button class="c-add-btn" (click)="addToCart($event, product)">Add to Cart</button>
+            </div>
+          </div>
+          <div class="c-body">
+            <div class="c-cat">{{ product.category }}</div>
+            <div class="c-name">{{ product.name }}</div>
+            <div class="c-foot">
+              <span class="c-price">${{ product.price }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- WHY CLOUDCART -->
+<div class="why">
+  <div class="why-inner">
+    <div class="why-item">
+      <div class="why-num">01</div>
+      <span class="why-icon">🚚</span>
+      <div class="why-title">Free Shipping</div>
+      <div class="why-desc">All orders over $50 ship free, next business day. No hidden fees, no surprises at checkout.</div>
+    </div>
+    <div class="why-item">
+      <div class="why-num">02</div>
+      <span class="why-icon">🔒</span>
+      <div class="why-title">Secure Checkout</div>
+      <div class="why-desc">Enterprise-grade encryption on every transaction. Your data stays yours, always.</div>
+    </div>
+    <div class="why-item">
+      <div class="why-num">03</div>
+      <span class="why-icon">⭐</span>
+      <div class="why-title">Curated Gear</div>
+      <div class="why-desc">Every product is hand-picked by gamers, for gamers. No compromises on quality or performance.</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS + NEWSLETTER -->
+<div class="bottom">
+  <div class="stats-col">
+    <div class="stat-block"><div class="stat-num">500+</div><div class="stat-lbl">Products</div></div>
+    <div class="stat-block"><div class="stat-num">10K+</div><div class="stat-lbl">Customers</div></div>
+    <div class="stat-block"><div class="stat-num">4.9★</div><div class="stat-lbl">Avg Rating</div></div>
+    <div class="stat-block"><div class="stat-num">24h</div><div class="stat-lbl">Support</div></div>
+  </div>
+  <div class="newsletter-col">
+    <div class="eyebrow">Stay in the loop</div>
+    <h2>Exclusive<br>Drops First</h2>
+    <p>Join 10,000+ gamers getting early access to new products, weekly deals, and members-only discounts.</p>
+    @if (!newsletterDone) {
+      <div class="nl-form">
+        <input class="nl-input" type="email" placeholder="your@email.com"
+          [(ngModel)]="newsletterEmail"
+          (keydown.enter)="onSubscribe()" />
+        <button class="nl-btn" (click)="onSubscribe()">Subscribe</button>
+      </div>
+      <div class="nl-note">No spam. Unsubscribe anytime.</div>
+    } @else {
+      <div class="nl-success">You're in! Check your inbox for exclusive drops.</div>
+    }
+  </div>
+</div>

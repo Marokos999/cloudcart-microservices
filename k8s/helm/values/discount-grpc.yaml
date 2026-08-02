@@ -1,0 +1,41 @@
+image:
+  repository: ghcr.io/marokos999/cloudcart-discount-grpc
+  tag: "latest"
+
+service:
+  port: 8080
+  targetPort: 8080
+
+livenessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  failureThreshold: 5
+
+readinessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  failureThreshold: 5
+
+env:
+  - name: ASPNETCORE_ENVIRONMENT
+    value: "Development"
+  - name: ConnectionStrings__Database
+    value: "Data Source=/data/discount.db"
+  - name: MessageBroker__Host
+    value: "amqp://rabbitmq:5672"
+  - name: MessageBroker__UserName
+    value: "guest"
+  - name: MessageBroker__Password
+    value: "guest"
+
+volumeMounts:
+  - name: sqlite-data
+    mountPath: /data
+
+volumes:
+  - name: sqlite-data
+    emptyDir: {}

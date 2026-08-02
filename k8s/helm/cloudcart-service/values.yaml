@@ -1,0 +1,51 @@
+replicaCount: 1
+
+image:
+  repository: ""
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: false
+  host: ""
+  path: "/"
+  annotations: {}
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+env: []
+envFrom: []
+
+livenessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  failureThreshold: 5
+
+readinessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  failureThreshold: 5
+
+serviceAccount:
+  create: false
+  name: ""
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

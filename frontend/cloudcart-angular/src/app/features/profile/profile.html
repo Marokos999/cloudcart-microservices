@@ -1,0 +1,157 @@
+<div class="page">
+
+  <div class="profile-header">
+    <div class="avatar-wrap">
+      <div class="avatar">
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()!" alt="avatar" />
+        } @else {
+          {{ initials() }}
+        }
+      </div>
+      <label class="avatar-upload" [class.loading]="uploadingAvatar" title="Change photo">
+        @if (uploadingAvatar) { ⏳ } @else { 📷 }
+        <input type="file" accept=".jpg,.jpeg,.png,.webp" (change)="onAvatarSelected($event)" hidden />
+      </label>
+    </div>
+    <div class="user-info">
+      <h1>{{ fullName() }}</h1>
+      <p class="email">{{ profile()?.email }}</p>
+      <p class="username">@{{ username }}</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat">
+        <div class="stat-value">{{ orders.length }}</div>
+        <div class="stat-label">Total Orders</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">${{ totalSpent.toFixed(0) }}</div>
+        <div class="stat-label">Total Spent</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">{{ activeOrders }}</div>
+        <div class="stat-label">Active</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'orders'" (click)="activeTab = 'orders'">My Orders</button>
+    <button class="tab" [class.active]="activeTab === 'account'" (click)="activeTab = 'account'">Account</button>
+  </div>
+
+  @if (activeTab === 'orders') {
+    @if (loading) {
+      <div class="loading">Loading orders...</div>
+    } @else if (orders.length === 0) {
+      <div class="empty">
+        <div class="empty-icon">🛍️</div>
+        <p>You haven't placed any orders yet.</p>
+        <a routerLink="/products" class="btn-primary">Start shopping</a>
+      </div>
+    } @else {
+      <div class="orders-list">
+        @for (order of orders; track order.id) {
+          <div class="order-card" [class.expanded]="expandedOrderId() === order.id">
+
+            <div class="order-header" (click)="toggleOrder(order.id)">
+              <div class="order-left">
+                <span class="order-icon">{{ statusIcon(order.status) }}</span>
+                <div>
+                  <div class="order-name">{{ order.orderName }}</div>
+                  <div class="order-meta">{{ order.id.slice(0, 8) }}... · {{ order.createdAt | date:'mediumDate' }}</div>
+                </div>
+              </div>
+              <div class="order-right">
+                <span class="badge" [class]="statusClass(order.status)">{{ order.status }}</span>
+                <span class="order-total">${{ order.totalPrice.toFixed(2) }}</span>
+                <span class="chevron" [class.open]="expandedOrderId() === order.id">›</span>
+              </div>
+            </div>
+
+            @if (expandedOrderId() === order.id) {
+              <div class="order-body">
+                <div class="items-table">
+                  <div class="items-header">
+                    <span>Product</span>
+                    <span>Qty</span>
+                    <span>Price</span>
+                    <span>Subtotal</span>
+                  </div>
+                  @for (item of order.orderItems; track item.productId) {
+                    <div class="item-row">
+                      <div class="item-product">
+                        @if (item.imageFile) {
+                          <img [src]="item.imageFile" [alt]="item.productName || item.productId" class="item-thumb" />
+                        } @else {
+                          <div class="item-thumb-placeholder">🎮</div>
+                        }
+                        <span class="item-name">{{ item.productName || item.productId }}</span>
+                      </div>
+                      <span>×{{ item.quantity }}</span>
+                      <span>${{ item.price.toFixed(2) }}</span>
+                      <span class="subtotal">${{ (item.price * item.quantity).toFixed(2) }}</span>
+                    </div>
+                  }
+                  <div class="items-total">
+                    <span>Total</span>
+                    <span>${{ order.totalPrice.toFixed(2) }}</span>
+                  </div>
+                </div>
+
+                <div class="addresses">
+                  <div class="address-block">
+                    <div class="address-label">Shipping address</div>
+                    <div>{{ order.shippingAddress.firstName }} {{ order.shippingAddress.lastName }}</div>
+                    <div>{{ order.shippingAddress.addressLine }}</div>
+                    <div>{{ order.shippingAddress.state }}, {{ order.shippingAddress.zipCode }}</div>
+                    <div>{{ order.shippingAddress.country }}</div>
+                  </div>
+                </div>
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+    }
+  }
+
+  @if (activeTab === 'account') {
+    <div class="account-section">
+      <div class="account-card">
+        <h3>Personal Info</h3>
+        <div class="info-row">
+          <span class="label">Full name</span>
+          <span>{{ fullName() }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Email</span>
+          <span>{{ profile()?.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Username</span>
+          <span>@{{ username }}</span>
+        </div>
+      </div>
+
+      <div class="account-card">
+        <h3>Roles</h3>
+        <div class="roles">
+          @for (role of roles; track role) {
+            <span class="role-badge">{{ role }}</span>
+          } @empty {
+            <span class="muted">No roles assigned</span>
+          }
+        </div>
+      </div>
+
+      <div class="account-card danger-zone">
+        <h3>Session</h3>
+        <p>You are currently signed in. Click below to sign out of your account.</p>
+        <button class="btn-danger" (click)="auth.logout()">Sign out</button>
+      </div>
+    </div>
+  }
+
+</div>

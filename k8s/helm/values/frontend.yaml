@@ -1,0 +1,30 @@
+image:
+  repository: ghcr.io/marokos999/cloudcart-frontend
+  tag: "latest"
+
+service:
+  port: 80
+  targetPort: 80
+
+ingress:
+  enabled: true
+  host: "cloudcart.local"
+  path: "/"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+
+livenessProbe:
+  tcpSocket:
+    port: 80
+  initialDelaySeconds: 10
+  periodSeconds: 20
+  failureThreshold: 5
+
+readinessProbe:
+  tcpSocket:
+    port: 80
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 5
+
+env: []

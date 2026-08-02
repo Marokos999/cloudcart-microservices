@@ -1,0 +1,52 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <a routerLink="/inventory" class="back">← Inventory</a>
+      <h1>Stock <span>Management</span></h1>
+    </div>
+    <div class="count">{{ filtered.length }} products</div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" class="search" placeholder="Search products..."
+      [(ngModel)]="search" (ngModelChange)="applyFilter()" />
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading...</div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Available</th>
+            <th>Reserved</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filtered; track row.product.id) {
+            <tr class="clickable" [routerLink]="['/inventory/stock', row.product.id]">
+              <td class="product-cell">
+                <div class="thumb">
+                  @if (row.product.imageFile) {
+                    <img [src]="row.product.imageFile" [alt]="row.product.name" />
+                  } @else {
+                    🎮
+                  }
+                </div>
+                {{ row.product.name }}
+              </td>
+              <td><span class="cat-badge">{{ row.product.category }}</span></td>
+              <td [class.low]="row.inventory.availableQuantity <= 5">{{ row.inventory.availableQuantity }}</td>
+              <td>{{ row.inventory.reservedQuantity }}</td>
+              <td>{{ row.inventory.quantity }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

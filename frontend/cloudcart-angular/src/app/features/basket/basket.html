@@ -1,0 +1,91 @@
+<div class="page">
+  <h1>Your <span>Cart</span></h1>
+
+  @if (items().length === 0) {
+    <div class="empty">
+      <div class="empty-icon">🛒</div>
+      <p>Your cart is empty</p>
+      <a routerLink="/products" class="btn-primary">Browse products</a>
+    </div>
+  } @else {
+    <div class="basket-layout">
+      <div class="items">
+        @for (item of items(); track item.productId) {
+          <div class="basket-item">
+            <div class="item-img">
+              @if (item.imageFile) {
+                <img [src]="item.imageFile" [alt]="item.productName" />
+              } @else {
+                🎮
+              }
+            </div>
+            <div class="item-info">
+              <div class="item-name">{{ item.productName }}</div>
+              <div class="item-price">${{ item.price }}</div>
+              @if (discounts()[item.productName]; as d) {
+                <div class="item-discount">Coupon: -${{ d }} per item</div>
+              }
+            </div>
+            <div class="item-qty">
+              <button (click)="decrement(item)">−</button>
+              <span>{{ item.quantity }}</span>
+              <button (click)="increment(item)">+</button>
+            </div>
+            <div class="item-subtotal">${{ (item.price * item.quantity).toFixed(2) }}</div>
+            <button class="remove-btn" (click)="remove(item)">✕</button>
+          </div>
+        }
+      </div>
+
+      <div class="summary">
+        <h2>Order summary</h2>
+        <div class="summary-row">
+          <span>Items ({{ totalQuantity() }})</span>
+          <span>${{ total().toFixed(2) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span class="free">Free</span>
+        </div>
+        @if (discountTotal() > 0) {
+          <div class="summary-row">
+            <span>Product discounts</span>
+            <span class="free">-${{ discountTotal().toFixed(2) }}</span>
+          </div>
+        }
+
+        <div class="coupon-box">
+          @if (appliedCoupon(); as coupon) {
+            <div class="coupon-applied">
+              <span class="coupon-code">{{ coupon.code }}</span>
+              <span class="free">-${{ coupon.amount.toFixed(2) }}</span>
+              <button class="coupon-remove" (click)="removeCoupon()">✕</button>
+            </div>
+          } @else {
+            <div class="coupon-input">
+              <input
+                type="text"
+                placeholder="Coupon code"
+                [(ngModel)]="couponCode"
+                (keyup.enter)="applyCoupon()"
+              />
+              <button [disabled]="applying" (click)="applyCoupon()">
+                {{ applying ? '...' : 'Apply' }}
+              </button>
+            </div>
+            @if (couponError) {
+              <div class="coupon-error">{{ couponError }}</div>
+            }
+          }
+        </div>
+
+        <div class="summary-total">
+          <span>Total</span>
+          <span>${{ finalTotal().toFixed(2) }}</span>
+        </div>
+        <a routerLink="/checkout" class="btn-primary">Proceed to checkout</a>
+        <button class="clear-btn" (click)="confirmClear()">Clear cart</button>
+      </div>
+    </div>
+  }
+</div>

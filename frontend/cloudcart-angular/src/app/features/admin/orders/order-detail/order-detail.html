@@ -1,0 +1,89 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <a routerLink="/admin/orders" class="back">← All Orders</a>
+      <h1>Order <span>Detail</span></h1>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading...</div>
+  } @else if (order) {
+
+    <div class="top-bar">
+      <div class="order-meta">
+        <span class="order-id">{{ order.id }}</span>
+        <span class="dot">·</span>
+        <span class="date">{{ order.createdAt | date:'mediumDate' }}</span>
+      </div>
+      <span class="badge" [class]="statusClass(order.status)">{{ order.status }}</span>
+    </div>
+
+    <div class="layout">
+
+      <div class="main">
+        <div class="card">
+          <h3>Order Items</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Product ID</th>
+                <th>Qty</th>
+                <th>Unit price</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of order.orderItems; track item.productId) {
+                <tr>
+                  <td class="product-id">{{ item.productId }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>${{ item.price.toFixed(2) }}</td>
+                  <td class="subtotal">${{ (item.price * item.quantity).toFixed(2) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <div class="total-row">
+            <span>Total</span>
+            <span class="total">${{ order.totalPrice.toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="card">
+          <h3>Customer</h3>
+          <div class="info-row"><span class="label">Name</span><span>{{ order.shippingAddress.firstName }} {{ order.shippingAddress.lastName }}</span></div>
+          <div class="info-row"><span class="label">Email</span><span>{{ order.shippingAddress.emailAddress }}</span></div>
+          <div class="info-row"><span class="label">Customer ID</span><span class="muted">{{ order.customerId }}</span></div>
+        </div>
+
+        <div class="card">
+          <h3>Shipping Address</h3>
+          <p class="address-line">{{ order.shippingAddress.addressLine }}</p>
+          <p class="address-line">{{ order.shippingAddress.state }}, {{ order.shippingAddress.zipCode }}</p>
+          <p class="address-line">{{ order.shippingAddress.country }}</p>
+        </div>
+
+        @if (!sameAddress()) {
+          <div class="card">
+            <h3>Billing Address</h3>
+            <p class="address-line">{{ order.billingAddress.firstName }} {{ order.billingAddress.lastName }}</p>
+            <p class="address-line">{{ order.billingAddress.addressLine }}</p>
+            <p class="address-line">{{ order.billingAddress.state }}, {{ order.billingAddress.zipCode }}</p>
+            <p class="address-line">{{ order.billingAddress.country }}</p>
+          </div>
+        } @else {
+          <div class="card same-billing">
+            <span>✓ Billing same as shipping</span>
+          </div>
+        }
+      </div>
+
+    </div>
+
+  } @else {
+    <div class="loading">Order not found.</div>
+  }
+</div>

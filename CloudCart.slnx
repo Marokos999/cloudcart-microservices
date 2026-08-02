@@ -1,0 +1,71 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/CloudCart.BuildingBlocks/CloudCart.BuildingBlocks.csproj" />
+  </Folder>
+  <Folder Name="/src/Gateway/">
+    <Project Path="src/Gateway/CloudCart.Gateway/CloudCart.Gateway.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/Basket/">
+    <Project Path="src/Services/Basket/Basket.API/Basket.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Catalog/">
+    <Project Path="src/Services/Catalog/Catalog.API/Catalog.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Discount/">
+    <Project Path="src/Services/Discount/Discount.Grpc/Discount.Grpc.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Payment/">
+    <Project Path="src/Services/Payment/Payment.API/Payment.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Inventory/">
+    <Project Path="src/Services/Inventory/Inventory.API/Inventory.API.csproj" />
+    <Project Path="src/Services/Inventory/Inventory.Application/Inventory.Application.csproj" />
+    <Project Path="src/Services/Inventory/Inventory.Domain/Inventory.Domain.csproj" />
+    <Project Path="src/Services/Inventory/Inventory.Infrastructure/Inventory.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Notification/">
+    <Project Path="src/Services/Notification/Notification.API/Notification.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Ordering/">
+    <Project Path="src/Services/Ordering/Ordering.API/Ordering.API.csproj" />
+    <Project Path="src/Services/Ordering/Ordering.Application/Ordering.Application.csproj" />
+    <Project Path="src/Services/Ordering/Ordering.Domain/Ordering.Domain.csproj" />
+    <Project Path="src/Services/Ordering/Ordering.Infrastructure/Ordering.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Gateway/">
+    <Project Path="tests/Gateway/CloudCart.Gateway.Tests/CloudCart.Gateway.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Services/" />
+  <Folder Name="/tests/Services/Basket/">
+    <Project Path="tests/Services/Basket/Basket.API.IntegrationTests/Basket.API.IntegrationTests.csproj" />
+    <Project Path="tests/Services/Basket/Basket.API.UnitTests/Basket.API.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Services/Catalog/">
+    <Project Path="tests/Services/Catalog/Catalog.API.IntegrationTests/Catalog.API.IntegrationTests.csproj" />
+    <Project Path="tests/Services/Catalog/Catalog.API.UnitTests/Catalog.API.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Services/Inventory/">
+    <Project Path="tests/Services/Inventory/Inventory.API.IntegrationTests/Inventory.API.IntegrationTests.csproj" />
+    <Project Path="tests/Services/Inventory/Inventory.API.UnitTests/Inventory.API.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Services/Discount/">
+    <Project Path="tests/Services/Discount/Discount.Grpc.UnitTests/Discount.Grpc.UnitTests.csproj" />
+    <Project Path="tests/Services/Discount/Discount.Grpc.IntegrationTests/Discount.Grpc.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Services/Notification/">
+    <Project Path="tests/Services/Notification/Notification.API.UnitTests/Notification.API.UnitTests.csproj" />
+    <Project Path="tests/Services/Notification/Notification.API.IntegrationTests/Notification.API.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Services/Ordering/">
+    <Project Path="tests/Services/Ordering/Ordering.API.IntegrationTests/Ordering.API.IntegrationTests.csproj" />
+    <Project Path="tests/Services/Ordering/Ordering.API.UnitTests/Ordering.API.UnitTests.csproj" />
+    <Project Path="tests/Services/Ordering/Ordering.Domain.UnitTests/Ordering.Domain.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Services/Payment/">
+    <Project Path="tests/Services/Payment/Payment.API.UnitTests/Payment.API.UnitTests.csproj" />
+    <Project Path="tests/Services/Payment/Payment.API.IntegrationTests/Payment.API.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

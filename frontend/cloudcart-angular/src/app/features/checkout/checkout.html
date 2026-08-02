@@ -1,0 +1,101 @@
+<div class="page">
+  @if (items().length === 0) {
+    <div class="empty">
+      <p>Your cart is empty.</p>
+      <a routerLink="/products" class="btn-primary">Browse products</a>
+    </div>
+  } @else {
+    <div class="checkout-layout">
+
+      <div class="form-section">
+        <form [formGroup]="form" (ngSubmit)="submit()">
+
+          <div class="form-block">
+            <h2>Shipping info</h2>
+            <div class="row-2">
+              <div class="field">
+                <label>First name</label>
+                <input formControlName="firstName" type="text" placeholder="John" />
+                @if (f['firstName'].touched && f['firstName'].invalid) {
+                  <span class="err">Required</span>
+                }
+              </div>
+              <div class="field">
+                <label>Last name</label>
+                <input formControlName="lastName" type="text" placeholder="Doe" />
+                @if (f['lastName'].touched && f['lastName'].invalid) {
+                  <span class="err">Required</span>
+                }
+              </div>
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input formControlName="email" type="email" placeholder="john@example.com" />
+              @if (f['email'].touched && f['email'].invalid) {
+                <span class="err">Valid email required</span>
+              }
+            </div>
+            <div class="field">
+              <label>Address</label>
+              <input formControlName="address" type="text" placeholder="123 Main St" />
+              @if (f['address'].touched && f['address'].invalid) {
+                <span class="err">Required</span>
+              }
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>City</label>
+                <input formControlName="city" type="text" placeholder="New York" />
+                @if (f['city'].touched && f['city'].invalid) {
+                  <span class="err">Required</span>
+                }
+              </div>
+              <div class="field">
+                <label>ZIP code</label>
+                <input formControlName="zip" type="text" placeholder="10001" />
+                @if (f['zip'].touched && f['zip'].invalid) {
+                  <span class="err">Required</span>
+                }
+              </div>
+            </div>
+            <div class="field">
+              <label>Country</label>
+              <input formControlName="country" type="text" placeholder="Serbia" />
+              @if (f['country'].touched && f['country'].invalid) {
+                <span class="err">Required</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-block">
+            <h2>Payment</h2>
+            @if (stripeError) {
+              <div class="stripe-error">{{ stripeError }}</div>
+            }
+            <div id="stripe-payment-element" class="stripe-element"></div>
+          </div>
+
+          <button type="submit" class="btn-submit" [disabled]="submitting || !stripeReady">
+            {{ submitting ? 'Processing...' : 'Pay $' + total().toFixed(2) }}
+          </button>
+
+        </form>
+      </div>
+
+      <div class="summary">
+        <h2>Order summary</h2>
+        @for (item of items(); track item.productId) {
+          <div class="summary-item">
+            <span>{{ item.productName }} × {{ item.quantity }}</span>
+            <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
+          </div>
+        }
+        <div class="summary-total">
+          <span>Total</span>
+          <span>${{ total().toFixed(2) }}</span>
+        </div>
+      </div>
+
+    </div>
+  }
+</div>

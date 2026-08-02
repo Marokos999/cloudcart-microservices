@@ -1,0 +1,28 @@
+image:
+  repository: ghcr.io/marokos999/cloudcart-catalog
+  tag: "latest"
+
+service:
+  port: 80
+  targetPort: 8080
+
+env:
+  - name: ASPNETCORE_ENVIRONMENT
+    value: "Development"
+  - name: ConnectionStrings__Database
+    valueFrom:
+      secretKeyRef:
+        name: cloudcart-secrets
+        key: mongodb-connection-string
+  - name: MessageBroker__Host
+    value: "amqp://rabbitmq:5672"
+  - name: MessageBroker__UserName
+    value: "guest"
+  - name: MessageBroker__Password
+    value: "guest"
+  - name: Minio__Endpoint
+    value: "minio:9000"
+  - name: Minio__AccessKey
+    value: "minioadmin"
+  - name: Minio__SecretKey
+    value: "minioadmin"
