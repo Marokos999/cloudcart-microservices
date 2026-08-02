@@ -1,6 +1,19 @@
-# CloudCart
+<div align="center">
 
-A production-grade e-commerce platform built with .NET 10 microservices, Angular 21, and a full cloud-native DevOps stack.
+# 🛒 CloudCart
+
+**Production-grade e-commerce platform built with .NET 10 microservices**
+
+[![CI](https://github.com/Marokos999/cloudcart-microservices/actions/workflows/ci.yml/badge.svg)](https://github.com/Marokos999/cloudcart-microservices/actions)
+![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
+![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-K8s-326CE5?logo=kubernetes)
+![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps-EF7B4D?logo=argo)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+*8 microservices · Angular SPA · Kubernetes · ArgoCD GitOps · Keycloak · Stripe*
+
+</div>
 
 ---
 
@@ -26,6 +39,8 @@ A production-grade e-commerce platform built with .NET 10 microservices, Angular
                 (MassTransit)
 ```
 
+---
+
 ## Services
 
 | Service | Description | Tech |
@@ -39,9 +54,20 @@ A production-grade e-commerce platform built with .NET 10 microservices, Angular
 | **Notification** | Email notifications, SignalR | MassTransit · SignalR |
 | **Gateway** | API Gateway, auth | YARP · Keycloak JWT |
 
+---
+
 ## Tech Stack
 
 ### Backend
+![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-10-512BD4?logo=dotnet)
+![MassTransit](https://img.shields.io/badge/MassTransit-RabbitMQ-FF6600)
+![EF Core](https://img.shields.io/badge/EF_Core-SQL_Server-CC2927?logo=microsoftsqlserver)
+![gRPC](https://img.shields.io/badge/gRPC-inter--service-244c5a)
+![Keycloak](https://img.shields.io/badge/Keycloak-25-4D4D4D?logo=keycloak)
+![Stripe](https://img.shields.io/badge/Stripe-Payments-635BFF?logo=stripe)
+![MinIO](https://img.shields.io/badge/MinIO-Object_Storage-C72E49)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Tracing-425CC7)
+
 - **ASP.NET Core 10** — Minimal API, MediatR, CQRS
 - **MassTransit + RabbitMQ** — event-driven communication between services
 - **Entity Framework Core** — SQL Server, code-first migrations
@@ -54,12 +80,23 @@ A production-grade e-commerce platform built with .NET 10 microservices, Angular
 - **OpenTelemetry** — distributed tracing and metrics
 
 ### Frontend
+![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
+![Stripe](https://img.shields.io/badge/Stripe_Elements-checkout-635BFF?logo=stripe)
+
 - **Angular 21** — signal-based state, standalone components
 - **keycloak-js** — PKCE authentication flow
 - **Stripe Elements** — checkout UI
 - **@microsoft/signalr** — real-time order updates
 
 ### Infrastructure
+![Docker](https://img.shields.io/badge/Docker-multi--stage-2496ED?logo=docker)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-local_+_cloud-326CE5?logo=kubernetes)
+![Helm](https://img.shields.io/badge/Helm-generic_chart-0F1689?logo=helm)
+![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps-EF7B4D?logo=argo)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?logo=githubactions)
+![Prometheus](https://img.shields.io/badge/Prometheus-Grafana-E6522C?logo=prometheus)
+
 - **Docker** — multi-stage builds, build context at repo root (shared BuildingBlocks)
 - **Kubernetes** — Docker Desktop (local), deployable to any cluster
 - **Helm** — single generic chart (`cloudcart-service`) with per-service values files
@@ -102,6 +139,7 @@ cloudcart-microservices/
 ## Running Locally (Kubernetes)
 
 ### Prerequisites
+
 - Docker Desktop with Kubernetes enabled
 - `kubectl`, `helm`, `argocd` CLI
 - Nginx Ingress Controller installed
@@ -113,7 +151,7 @@ cloudcart-microservices/
 127.0.0.1 keycloak.local
 ```
 
-### 2. Deploy infrastructure (Keycloak, ArgoCD)
+### 2. Deploy infrastructure
 
 ```bash
 kubectl apply -f k8s/infra/
@@ -137,7 +175,7 @@ kubectl port-forward svc/keycloak -n cloudcart 8080:8080
 # ArgoCD
 kubectl port-forward svc/argocd-server -n argocd 8443:443
 
-# Ingress (port 80 occupied by Docker Desktop on Windows)
+# Ingress (port 80 occupied by Docker Desktop on Windows — use 8888)
 kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 8888:80
 ```
 
@@ -146,39 +184,53 @@ kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 8888:80
 | URL | Description |
 |---|---|
 | `http://localhost:4200` | Angular frontend |
-| `http://localhost:8080/admin` | Keycloak admin (admin / admin123) |
+| `http://localhost:8080/admin` | Keycloak admin (`admin` / `admin123`) |
 | `https://localhost:8443` | ArgoCD UI |
 
-> **Note:** Use `localhost` URLs for authentication. Keycloak PKCE requires HTTPS or `localhost` (Web Crypto API limitation).
+> **Note:** Use `localhost` URLs for authentication. Keycloak PKCE requires HTTPS or `localhost` (Web Crypto API limitation — custom domains without HTTPS will block auth).
 
 ---
 
-## CI/CD
-
-GitHub Actions builds and pushes Docker images to `ghcr.io/marokos999/cloudcart-*` on every push to `main`. ArgoCD automatically detects new images and syncs deployments.
+## CI/CD Pipeline
 
 ```
-push to main → GitHub Actions → build & push to ghcr.io → ArgoCD sync → K8s rollout
+push to main
+    │
+    ▼
+GitHub Actions (matrix build — one job per service)
+    │
+    ▼
+ghcr.io/marokos999/cloudcart-{service}:latest
+    │
+    ▼
+ArgoCD detects new image → syncs → kubectl rollout
 ```
 
 ---
 
 ## Authentication Flow
 
-1. Angular app initiates PKCE flow via `keycloak-js`
+```
+Angular → Keycloak (PKCE) → JWT → Gateway (validate) → Microservices
+```
+
+1. Angular initiates PKCE flow via `keycloak-js`
 2. User authenticates against Keycloak (`cloudcart` realm)
 3. Keycloak issues JWT access token
-4. Angular attaches token to every API request
-5. Gateway validates JWT and forwards to microservices
+4. Angular attaches Bearer token to every API request
+5. Gateway validates JWT, then forwards to the appropriate microservice
 
-The `cloudcart` realm is auto-imported from a ConfigMap on Keycloak startup — no manual configuration needed.
+> The `cloudcart` realm is auto-imported from a ConfigMap on Keycloak startup — no manual setup required.
 
 ---
 
 ## Key Design Decisions
 
-- **Single generic Helm chart** — all services use `cloudcart-service` chart with per-service `values/` files; reduces duplication
-- **Config over env vars** — complex config keys (e.g. YARP cluster routes) live in `appsettings.Development.json` since Kubernetes env var names cannot contain hyphens
-- **CORS from config** — all services read allowed origins from `appsettings`, never hardcoded
-- **MassTransit namespace-based queue naming** — prevents queue collisions between services
-- **Build context at repo root** — required for .NET multi-stage builds to access shared `BuildingBlocks`
+| Decision | Why |
+|---|---|
+| Single generic Helm chart | All services share one chart; per-service `values/` reduces duplication |
+| Config over K8s env vars | K8s env var names can't contain hyphens — YARP cluster config lives in `appsettings` |
+| CORS from config | Never hardcoded — different origins per environment without rebuilds |
+| MassTransit namespace queues | `includeNamespace: true` prevents silent queue collisions between services |
+| Build context at repo root | Required for .NET multi-stage builds to access shared `BuildingBlocks` |
+| `imagePullPolicy: Always` | Ensures latest image is pulled after every ArgoCD sync |
